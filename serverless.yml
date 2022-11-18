@@ -1,0 +1,31 @@
+service: sls-golang-template
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: go1.x
+  memorySize: 256
+  region: us-east-1
+  apiGateway:
+    shouldStartNameWithService: true
+  stage: local
+
+functions:
+  first:
+    handler: bin/first
+    events:
+      - httpApi:
+          path: /first
+          method: get
+  second:
+    handler: bin/second
+    events:
+      - httpApi:
+          path: /second
+          method: get
+
+package:
+  patterns:
+    - '!./**'
+    - './bin/**'
