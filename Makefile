@@ -9,3 +9,7 @@ clean:
 .PHONY: deploy
 deploy: clean build
 	sls deploy --verbose
+
+.PHONY: invoke
+invoke: clean build
+	sls invoke ${params}
