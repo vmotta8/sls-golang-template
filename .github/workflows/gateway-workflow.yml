@@ -19,94 +19,71 @@ jobs:
       - name: Test
         run: go test -v ./...
   
-  # deploy-main:
-  #   if: github.ref == 'refs/heads/main'
-  #   environment: main
+  deploy-staging:
+    if: github.ref == 'refs/heads/staging'
+    environment: staging
 
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     matrix:
-  #       node-version: [14]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14]
 
-  #   steps:
-  #     - uses: actions/checkout@v2
+    steps:
+      - uses: actions/checkout@v3
 
-  #     - name: Set up Node.js ${{ matrix.node-version }}
-  #       uses: actions/setup-node@v1
-  #       with:
-  #         node-version: ${{ matrix.node-version }}
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.x
 
-  #     - name: Install development dependencies
-  #       run: |
-  #         yarn install:development
+      - name: Clean & Build
+        run: |
+          make clean && make build
 
-  #     - name: Build application
-  #       run: |
-  #         yarn build
+      - name: Create env file # Environment secrets
+        run: |
+          touch env.yml
+          echo STAGE: "${{secrets.STAGE}}" >> env.yml
 
-  #     - name: Remove local plugins
-  #       run: |
-  #         yq eval -i 'del(.plugins)' serverless.yml
+      - name: Serverless deploy
+        uses: serverless/github-action@v3
+        with:
+          args: deploy
+        env: # Repository secrets
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-  #     - name: Install production dependencies
-  #       run: |
-  #         yarn install:production
-
-  #     - name: Create env file # Environment secrets
-  #       run: |
-  #         touch .env
-  #         echo NODE_ENV="${{secrets.NODE_ENV}}" >> .env
-
-  #     - name: Serverless deploy
-  #       uses: serverless/github-action@v2
-  #       with:
-  #         args: deploy
-  #       env: # Repository secrets
-  #         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   
-  # deploy-staging:
-  #   if: github.ref == 'refs/heads/staging'
-  #   environment: staging
+  deploy-main:
+    if: github.ref == 'refs/heads/main'
+    environment: main
 
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     matrix:
-  #       node-version: [14]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14]
 
-  #   steps:
-  #     - uses: actions/checkout@v2
+    steps:
+      - uses: actions/checkout@v3
 
-  #     - name: Set up Node.js ${{ matrix.node-version }}
-  #       uses: actions/setup-node@v1
-  #       with:
-  #         node-version: ${{ matrix.node-version }}
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.x
 
-  #     - name: Install development dependencies
-  #       run: |
-  #         yarn install:development
+      - name: Clean & Build
+        run: |
+          make clean && make build
 
-  #     - name: Build application
-  #       run: |
-  #         yarn build
+      - name: Create env file # Environment secrets
+        run: |
+          touch env.yml
+          echo STAGE: "${{secrets.STAGE}}" >> env.yml
 
-  #     - name: Remove local plugins
-  #       run: |
-  #         yq eval -i 'del(.plugins)' serverless.yml
-
-  #     - name: Install production dependencies
-  #       run: |
-  #         yarn install:production
-
-  #     - name: Create env file # Environment secrets
-  #       run: |
-  #         touch .env
-  #         echo NODE_ENV="${{secrets.NODE_ENV}}" >> .env
-
-  #     - name: Serverless deploy
-  #       uses: serverless/github-action@v2
-  #       with:
-  #         args: deploy
-  #       env: # Repository secrets
-  #         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      - name: Serverless deploy
+        uses: serverless/github-action@v3
+        with:
+          args: deploy
+        env: # Repository secrets
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
