@@ -9,7 +9,7 @@ provider:
   region: us-east-1
   apiGateway:
     shouldStartNameWithService: true
-  stage: local
+  stage: ${file(env.yml):STAGE}
 
 functions:
   first:
